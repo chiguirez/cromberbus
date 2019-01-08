@@ -3,6 +3,7 @@ package cromberbus
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"reflect"
 )
 
 type Command interface {}
@@ -21,17 +22,17 @@ type HandlerResolver interface {
 }
 
 type MapHandlerResolver struct {
-	handlers map[Command]CommandHandler
+	handlers map[reflect.Type]CommandHandler
 }
 
 func NewMapHandlerResolver() MapHandlerResolver {
 	return MapHandlerResolver{
-		map[Command]CommandHandler{},
+		map[reflect.Type]CommandHandler{},
 	}
 }
 
 func (r *MapHandlerResolver) Resolve(command Command) (CommandHandler, error) {
-	handler, ok := r.handlers[command]
+	handler, ok := r.handlers[r.typeOf(command)]
 	if !ok {
 		return nil, fmt.Errorf("could not find command handler")
 	}
@@ -39,8 +40,15 @@ func (r *MapHandlerResolver) Resolve(command Command) (CommandHandler, error) {
 	return handler, nil
 }
 
+func (r *MapHandlerResolver) typeOf(command Command) reflect.Type{
+	if reflect.TypeOf(command).Kind() == reflect.Ptr {
+		return reflect.TypeOf(command).Elem()
+	}
+	return reflect.TypeOf(command)
+}
+
 func (r *MapHandlerResolver) AddHandler(command Command, handler CommandHandler) {
-	r.handlers[command] = handler
+	r.handlers[r.typeOf(command)] = handler
 }
 
 type CromberBus struct {
