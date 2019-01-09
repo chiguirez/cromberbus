@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bitbucket.org/hosseio/cromberbus"
 	"fmt"
+	"github.com/hosseio/cromberbus"
 	"github.com/pkg/errors"
 )
 
@@ -24,12 +24,10 @@ func (h *RegisterUserCommandHandler) Handle(command cromberbus.Command) error {
 
 func main() {
 	mapHandlerResolver := cromberbus.NewMapHandlerResolver()
-	registerUserCommand := RegisterUserCommand{"some@email.com"}
-	registerUserCommandHandler := &RegisterUserCommandHandler{}
-	mapHandlerResolver.AddHandler(registerUserCommand, registerUserCommandHandler)
-
+	mapHandlerResolver.AddHandler(new(RegisterUserCommand), new(RegisterUserCommandHandler))
 	bus := cromberbus.NewCromberBus(&mapHandlerResolver)
-	err := bus.Dispatch(registerUserCommand)
+	command := RegisterUserCommand{"some@email.com"}
+	err := bus.Dispatch(command)
 	if err != nil {
 		fmt.Println(errors.Cause(err))
 	}
