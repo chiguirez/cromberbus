@@ -5,17 +5,27 @@ import (
 	"testing"
 )
 
-type ACommandHandler struct{
+type ACommandHandler struct {
 	NumberOfHandleCalls int
 }
+
 func (h *ACommandHandler) Handle(command Command) error {
 	h.NumberOfHandleCalls++
 	return nil
 }
 
+type AMiddleware struct {
+	NumberOfExecuteCalls int
+}
+
+func (m *AMiddleware) Execute(command Command, next CommandCallable) {
+	m.NumberOfExecuteCalls++
+	next(command)
+}
+
 func TestMapHandlerResolver_Resolve(t *testing.T) {
 	isRequire := require.New(t)
-	command := struct {}{}
+	command := struct{}{}
 	t.Run("Given a map handler resolver", func(t *testing.T) {
 		sut := NewMapHandlerResolver()
 		t.Run("When command handler is not found", func(t *testing.T) {
@@ -39,7 +49,7 @@ func TestMapHandlerResolver_Resolve(t *testing.T) {
 
 func TestCromberBus_Dispatch(t *testing.T) {
 	isRequire := require.New(t)
-	t.Run("Given a cromberbus command bus", func(t *testing.T) {
+	t.Run("Given a cromberbus command bus without middlewares", func(t *testing.T) {
 		handler := ACommandHandler{}
 		handlerResolver := HandlerResolverMock{
 			ResolveFunc: func(command Command) (CommandHandler, error) {
@@ -48,14 +58,38 @@ func TestCromberBus_Dispatch(t *testing.T) {
 		}
 		sut := NewCromberBus(&handlerResolver)
 		t.Run("When a command is dispatched", func(t *testing.T) {
-			command := struct {}{}
-			err := sut.Dispatch(command)
+			command := struct{}{}
+			sut.Dispatch(command)
 			t.Run("Then the resolved command handler handles the command", func(t *testing.T) {
-				isRequire.Nil(err)
 				resolverHasBeenCalled := len(handlerResolver.ResolveCalls()) > 0
 				isRequire.True(resolverHasBeenCalled)
 				handlerHasBeenCalled := handler.NumberOfHandleCalls > 0
 				isRequire.True(handlerHasBeenCalled)
+			})
+		})
+	})
+	t.Run("Given a cromberbus command bus with middlewares", func(t *testing.T) {
+		aMiddleware := &AMiddleware{}
+		anotherMiddleware := &AMiddleware{}
+		handler := ACommandHandler{}
+		handlerResolver := HandlerResolverMock{
+			ResolveFunc: func(command Command) (CommandHandler, error) {
+				return &handler, nil
+			},
+		}
+		sut := NewCromberBus(&handlerResolver, aMiddleware, anotherMiddleware)
+		t.Run("When a command is dispatched", func(t *testing.T) {
+			command := struct{}{}
+			sut.Dispatch(command)
+			t.Run("Then the resolved command handler handles the command", func(t *testing.T) {
+				resolverHasBeenCalled := len(handlerResolver.ResolveCalls()) > 0
+				isRequire.True(resolverHasBeenCalled)
+				handlerHasBeenCalled := handler.NumberOfHandleCalls > 0
+				isRequire.True(handlerHasBeenCalled)
+			})
+			t.Run("And the middlewares are executed", func(t *testing.T) {
+				isRequire.True(aMiddleware.NumberOfExecuteCalls > 0)
+				isRequire.True(anotherMiddleware.NumberOfExecuteCalls > 0)
 			})
 		})
 	})
