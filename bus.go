@@ -31,7 +31,7 @@ func NewMapHandlerResolver() MapHandlerResolver {
 	}
 }
 
-func (r *MapHandlerResolver) Resolve(command Command) (CommandHandler, error) {
+func (r MapHandlerResolver) Resolve(command Command) (CommandHandler, error) {
 	handler, ok := r.handlers[r.typeOf(command)]
 	if !ok {
 		return nil, fmt.Errorf("could not find command handler")
@@ -40,14 +40,14 @@ func (r *MapHandlerResolver) Resolve(command Command) (CommandHandler, error) {
 	return handler, nil
 }
 
-func (r *MapHandlerResolver) typeOf(command Command) reflect.Type {
+func (r MapHandlerResolver) typeOf(command Command) reflect.Type {
 	if reflect.TypeOf(command).Kind() == reflect.Ptr {
 		return reflect.TypeOf(command).Elem()
 	}
 	return reflect.TypeOf(command)
 }
 
-func (r *MapHandlerResolver) AddHandler(command Command, handler CommandHandler) {
+func (r MapHandlerResolver) AddHandler(command Command, handler CommandHandler) {
 	r.handlers[r.typeOf(command)] = handler
 }
 
@@ -61,7 +61,7 @@ type commandHandlingMiddleware struct {
 	handlerResolver HandlerResolver
 }
 
-func (m *commandHandlingMiddleware) Execute(command Command, next CommandCallable) {
+func (m commandHandlingMiddleware) Execute(command Command, next CommandCallable) {
 	//TODO: why are we ignoring this error?
 	handler, _ := m.handlerResolver.Resolve(command)
 
@@ -74,7 +74,7 @@ func (m *commandHandlingMiddleware) Execute(command Command, next CommandCallabl
 
 type MiddlewareList []Middleware
 
-func NewMiddlewareList(commandHandler *commandHandlingMiddleware) MiddlewareList {
+func NewMiddlewareList(commandHandler commandHandlingMiddleware) MiddlewareList {
 	return []Middleware{commandHandler}
 }
 
@@ -107,12 +107,12 @@ type CromberBus struct {
 }
 
 func NewCromberBus(handlerResolver HandlerResolver, middlewares ...Middleware) CromberBus {
-	commandHandlingMiddleware := &commandHandlingMiddleware{handlerResolver}
+	commandHandlingMiddleware := commandHandlingMiddleware{handlerResolver}
 	middlewareList := NewMiddlewareList(commandHandlingMiddleware).Queue(middlewares...)
 
 	return CromberBus{middlewareList}
 }
 
-func (b *CromberBus) Dispatch(command Command) {
+func (b CromberBus) Dispatch(command Command) {
 	b.middlewares.start(command)
 }

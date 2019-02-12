@@ -12,7 +12,7 @@ type RegisterUserCommand struct {
 
 type RegisterUserCommandHandler struct{}
 
-func (h *RegisterUserCommandHandler) Handle(command cromberbus.Command) error {
+func (h RegisterUserCommandHandler) Handle(command cromberbus.Command) error {
 	registerUserCommand, ok := command.(RegisterUserCommand)
 	if !ok {
 		return errors.New("Could not handle a non register user command")
@@ -24,7 +24,7 @@ func (h *RegisterUserCommandHandler) Handle(command cromberbus.Command) error {
 
 type LoggingMiddleware struct{}
 
-func (m *LoggingMiddleware) Execute(command cromberbus.Command, next cromberbus.CommandCallable) {
+func (m LoggingMiddleware) Execute(command cromberbus.Command, next cromberbus.CommandCallable) {
 	fmt.Println("Execution of logging middleware")
 	next(command)
 }
