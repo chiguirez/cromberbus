@@ -39,4 +39,3 @@ func (r MapHandlerResolver) typeOf(command Command) string {
 func (r MapHandlerResolver) AddHandler(command Command, handler CommandHandler) {
 	r.handlers[r.typeOf(command)] = handler
 }
-

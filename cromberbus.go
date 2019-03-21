@@ -11,6 +11,8 @@ func NewCromberBus(handlerResolver CommandHandlerResolver, middlewares ...Middle
 	return CromberBus{middlewareList}
 }
 
-func (b CromberBus) Dispatch(command Command) {
-	b.middlewares.start(command)
+func (b CromberBus) Dispatch(command Command) error {
+	err := b.middlewares.start(command)
+
+	return err
 }

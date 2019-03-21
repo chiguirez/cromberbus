@@ -24,9 +24,10 @@ func (h RegisterUserCommandHandler) Handle(command cromberbus.Command) error {
 
 type LoggingMiddleware struct{}
 
-func (m LoggingMiddleware) Execute(command cromberbus.Command, next cromberbus.CommandCallable) {
+func (m LoggingMiddleware) Execute(command cromberbus.Command, next cromberbus.CommandCallable) error {
 	fmt.Println("Execution of logging middleware")
-	next(command)
+
+	return next(command)
 }
 
 func main() {
@@ -34,5 +35,8 @@ func main() {
 	mapHandlerResolver.AddHandler(new(RegisterUserCommand), new(RegisterUserCommandHandler))
 	bus := cromberbus.NewCromberBus(&mapHandlerResolver, new(LoggingMiddleware))
 	command := RegisterUserCommand{"some@email.com"}
-	bus.Dispatch(command)
+	err := bus.Dispatch(command)
+	if err != nil {
+		fmt.Printf("WARNING! an error occurred '%s'", err.Error())
+	}
 }
