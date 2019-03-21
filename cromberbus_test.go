@@ -51,7 +51,7 @@ func TestCromberBus_Dispatch(t *testing.T) {
 	isRequire := require.New(t)
 	t.Run("Given a cromberbus command bus without middlewares", func(t *testing.T) {
 		handler := ACommandHandler{}
-		handlerResolver := HandlerResolverMock{
+		handlerResolver := CommandHandlerResolverMock{
 			ResolveFunc: func(command Command) (CommandHandler, error) {
 				return &handler, nil
 			},
@@ -72,7 +72,7 @@ func TestCromberBus_Dispatch(t *testing.T) {
 		aMiddleware := &AMiddleware{}
 		anotherMiddleware := &AMiddleware{}
 		handler := ACommandHandler{}
-		handlerResolver := HandlerResolverMock{
+		handlerResolver := CommandHandlerResolverMock{
 			ResolveFunc: func(command Command) (CommandHandler, error) {
 				return &handler, nil
 			},
