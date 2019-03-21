@@ -2,7 +2,7 @@ package cromberbus
 
 import (
 	"fmt"
-	"reflect"
+	"github.com/chiguirez/cromberbus/typer"
 )
 
 //go:generate moq -out command_handler_resolver_mock.go . CommandHandlerResolver
@@ -21,7 +21,7 @@ func NewMapHandlerResolver() MapHandlerResolver {
 }
 
 func (r MapHandlerResolver) Resolve(command Command) (CommandHandler, error) {
-	handler, ok := r.handlers[r.typeOf(command)]
+	handler, ok := r.handlers[typer.Identify(command)]
 	if !ok {
 		return nil, fmt.Errorf("could not find command handler")
 	}
@@ -29,13 +29,6 @@ func (r MapHandlerResolver) Resolve(command Command) (CommandHandler, error) {
 	return handler, nil
 }
 
-func (r MapHandlerResolver) typeOf(command Command) string {
-	if reflect.TypeOf(command).Kind() == reflect.Ptr {
-		return reflect.TypeOf(command).Elem().String()
-	}
-	return reflect.TypeOf(command).String()
-}
-
 func (r MapHandlerResolver) AddHandler(command Command, handler CommandHandler) {
-	r.handlers[r.typeOf(command)] = handler
+	r.handlers[typer.Identify(command)] = handler
 }
