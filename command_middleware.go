@@ -1,24 +1,26 @@
 package cromberbus
 
-type CommandCallable func(command Command)
+type CommandCallable func(command Command) error
 
 type Middleware interface {
-	Execute(command Command, next CommandCallable)
+	Execute(command Command, next CommandCallable) error
 }
 
 type commandHandlingMiddleware struct {
 	handlerResolver CommandHandlerResolver
 }
 
-func (m commandHandlingMiddleware) Execute(command Command, next CommandCallable) {
-	//TODO: why are we ignoring this error?
-	handler, _ := m.handlerResolver.Resolve(command)
-
-	if err := handler.Handle(command); err!=nil{
-		return
+func (m commandHandlingMiddleware) Execute(command Command, next CommandCallable) error{
+	handler, err := m.handlerResolver.Resolve(command)
+	if err != nil {
+		return err
 	}
 
-	next(command)
+	if err = handler.Handle(command); err!=nil{
+		return err
+	}
+
+	return next(command)
 }
 
 type MiddlewareList []Middleware
@@ -31,8 +33,8 @@ func (m MiddlewareList) Queue(middleware ...Middleware) MiddlewareList {
 	return append(m, middleware...)
 }
 
-func (m MiddlewareList) start(command Command) {
-	m.getCallable(0)(command)
+func (m MiddlewareList) start(command Command) error {
+	return m.getCallable(0)(command)
 }
 
 func (m MiddlewareList) lastIndex() int {
@@ -40,13 +42,14 @@ func (m MiddlewareList) lastIndex() int {
 }
 
 func (m MiddlewareList) getCallable(index int) CommandCallable {
-	lastCallable := func(command Command) {}
+	lastCallable := func(command Command) error {return nil}
 	if index > m.lastIndex() {
 		return lastCallable
 	}
 
-	return func(command Command) {
+	return func(command Command) error{
 		middleware := m[index]
-		middleware.Execute(command, m.getCallable(index+1))
+
+		return middleware.Execute(command, m.getCallable(index+1))
 	}
 }

@@ -18,9 +18,10 @@ type AMiddleware struct {
 	NumberOfExecuteCalls int
 }
 
-func (m *AMiddleware) Execute(command Command, next CommandCallable) {
+func (m *AMiddleware) Execute(command Command, next CommandCallable) error {
 	m.NumberOfExecuteCalls++
-	next(command)
+
+	return next(command)
 }
 
 func TestMapHandlerResolver_Resolve(t *testing.T) {

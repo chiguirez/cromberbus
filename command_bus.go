@@ -6,7 +6,6 @@ type CommandHandler interface {
 	Handle(command Command) error
 }
 
-//TODO: what about error propagation and error handling
 type CommandBus interface {
-	Dispatch(command Command)
+	Dispatch(command Command) error
 }
