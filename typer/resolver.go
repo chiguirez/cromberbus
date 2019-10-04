@@ -1,6 +1,8 @@
 package typer
 
-import "reflect"
+import (
+	"reflect"
+)
 
 func Identify(i interface{}) string {
 	rType := reflect.TypeOf(i)

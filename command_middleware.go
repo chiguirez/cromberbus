@@ -10,13 +10,13 @@ type commandHandlingMiddleware struct {
 	handlerResolver CommandHandlerResolver
 }
 
-func (m commandHandlingMiddleware) Execute(command Command, next CommandCallable) error{
+func (m commandHandlingMiddleware) Execute(command Command, next CommandCallable) error {
 	handler, err := m.handlerResolver.Resolve(command)
 	if err != nil {
 		return err
 	}
 
-	if err = handler.Handle(command); err!=nil{
+	if err := handler.Call(command); err != nil {
 		return err
 	}
 
@@ -25,7 +25,7 @@ func (m commandHandlingMiddleware) Execute(command Command, next CommandCallable
 
 type MiddlewareList []Middleware
 
-func NewMiddlewareList(commandHandler commandHandlingMiddleware) MiddlewareList {
+func NewMiddlewareList(commandHandler Middleware) MiddlewareList {
 	return []Middleware{commandHandler}
 }
 
@@ -42,12 +42,12 @@ func (m MiddlewareList) lastIndex() int {
 }
 
 func (m MiddlewareList) getCallable(index int) CommandCallable {
-	lastCallable := func(command Command) error {return nil}
+	lastCallable := func(command Command) error { return nil }
 	if index > m.lastIndex() {
 		return lastCallable
 	}
 
-	return func(command Command) error{
+	return func(command Command) error {
 		middleware := m[index]
 
 		return middleware.Execute(command, m.getCallable(index+1))

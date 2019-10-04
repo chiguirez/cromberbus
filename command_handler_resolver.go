@@ -2,6 +2,7 @@ package cromberbus
 
 import (
 	"fmt"
+
 	"github.com/chiguirez/cromberbus/typer"
 )
 
@@ -23,12 +24,13 @@ func NewMapHandlerResolver() MapHandlerResolver {
 func (r MapHandlerResolver) Resolve(command Command) (CommandHandler, error) {
 	handler, ok := r.handlers[typer.Identify(command)]
 	if !ok {
-		return nil, fmt.Errorf("could not find command handler")
+		return CommandHandler{}, fmt.Errorf("could not find command handler")
 	}
 
 	return handler, nil
 }
 
-func (r MapHandlerResolver) AddHandler(command Command, handler CommandHandler) {
-	r.handlers[typer.Identify(command)] = handler
+func (r MapHandlerResolver) AddHandler(handlerFn interface{}) {
+	commandHandler := NewCommandHandler(handlerFn)
+	r.handlers[commandHandler.CommandName()] = commandHandler
 }

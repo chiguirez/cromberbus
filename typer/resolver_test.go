@@ -1,11 +1,12 @@
 package typer
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-type ACommand struct {}
+type ACommand struct{}
 
 func TestIdentify(t *testing.T) {
 	assertThat := require.New(t)
