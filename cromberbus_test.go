@@ -1,15 +1,16 @@
 package cromberbus
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type ACommandHandler struct {
 	NumberOfHandleCalls int
 }
 
-func (h *ACommandHandler) Handle(command Command) error {
+func (h *ACommandHandler) Handle(command struct{}) error {
 	h.NumberOfHandleCalls++
 	return nil
 }
@@ -32,17 +33,20 @@ func TestMapHandlerResolver_Resolve(t *testing.T) {
 		t.Run("When command handler is not found", func(t *testing.T) {
 			handler, err := sut.Resolve(command)
 			t.Run("Then an error is returned", func(t *testing.T) {
-				isRequire.Nil(handler)
+				isRequire.Equal(CommandHandler{}, handler)
 				isRequire.Error(err)
 			})
 		})
 		t.Run("When a command with its handler is added", func(t *testing.T) {
 			handler := &ACommandHandler{}
-			sut.AddHandler(command, handler)
+			sut.AddHandler(handler.Handle)
 			t.Run("Then the handler is resolved", func(t *testing.T) {
 				resolvedHandler, err := sut.Resolve(command)
-				isRequire.Equal(handler, resolvedHandler)
 				isRequire.NoError(err)
+				isRequire.Equal(
+					NewCommandHandler(handler.Handle).CommandName(),
+					resolvedHandler.CommandName(),
+				)
 			})
 		})
 	})
@@ -54,13 +58,13 @@ func TestCromberBus_Dispatch(t *testing.T) {
 		handler := ACommandHandler{}
 		handlerResolver := CommandHandlerResolverMock{
 			ResolveFunc: func(command Command) (CommandHandler, error) {
-				return &handler, nil
+				return NewCommandHandler(handler.Handle), nil
 			},
 		}
 		sut := NewCromberBus(&handlerResolver)
 		t.Run("When a command is dispatched", func(t *testing.T) {
 			command := struct{}{}
-			sut.Dispatch(command)
+			_ = sut.Dispatch(command)
 			t.Run("Then the resolved command handler handles the command", func(t *testing.T) {
 				resolverHasBeenCalled := len(handlerResolver.ResolveCalls()) > 0
 				isRequire.True(resolverHasBeenCalled)
@@ -75,13 +79,13 @@ func TestCromberBus_Dispatch(t *testing.T) {
 		handler := ACommandHandler{}
 		handlerResolver := CommandHandlerResolverMock{
 			ResolveFunc: func(command Command) (CommandHandler, error) {
-				return &handler, nil
+				return NewCommandHandler(handler.Handle), nil
 			},
 		}
 		sut := NewCromberBus(&handlerResolver, aMiddleware, anotherMiddleware)
 		t.Run("When a command is dispatched", func(t *testing.T) {
 			command := struct{}{}
-			sut.Dispatch(command)
+			_ = sut.Dispatch(command)
 			t.Run("Then the resolved command handler handles the command", func(t *testing.T) {
 				resolverHasBeenCalled := len(handlerResolver.ResolveCalls()) > 0
 				isRequire.True(resolverHasBeenCalled)

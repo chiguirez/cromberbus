@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/chiguirez/cromberbus"
-	"github.com/pkg/errors"
 )
 
 type RegisterUserCommand struct {
@@ -12,12 +12,7 @@ type RegisterUserCommand struct {
 
 type RegisterUserCommandHandler struct{}
 
-func (h RegisterUserCommandHandler) Handle(command cromberbus.Command) error {
-	registerUserCommand, ok := command.(RegisterUserCommand)
-	if !ok {
-		return errors.New("Could not handle a non register user command")
-	}
-
+func (h RegisterUserCommandHandler) Handle(registerUserCommand RegisterUserCommand) error {
 	fmt.Println("registering", registerUserCommand.email)
 	return nil
 }
@@ -32,7 +27,7 @@ func (m LoggingMiddleware) Execute(command cromberbus.Command, next cromberbus.C
 
 func main() {
 	mapHandlerResolver := cromberbus.NewMapHandlerResolver()
-	mapHandlerResolver.AddHandler(new(RegisterUserCommand), new(RegisterUserCommandHandler))
+	mapHandlerResolver.AddHandler(new(RegisterUserCommandHandler).Handle)
 	bus := cromberbus.NewCromberBus(&mapHandlerResolver, new(LoggingMiddleware))
 	command := RegisterUserCommand{"some@email.com"}
 	err := bus.Dispatch(command)
