@@ -3,7 +3,7 @@ package cromberbus
 import (
 	"fmt"
 
-	"github.com/chiguirez/cromberbus/typer"
+	"github.com/chiguirez/cromberbus/v2/typer"
 )
 
 //go:generate moq -out command_handler_resolver_mock.go . CommandHandlerResolver
