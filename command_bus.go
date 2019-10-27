@@ -3,7 +3,7 @@ package cromberbus
 import (
 	"reflect"
 
-	"github.com/chiguirez/cromberbus/guard"
+	"github.com/chiguirez/cromberbus/v2/guard"
 )
 
 type Command interface{}

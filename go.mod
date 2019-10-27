@@ -1,4 +1,4 @@
-module github.com/chiguirez/cromberbus
+module github.com/chiguirez/cromberbus/v2
 
 require (
 	cloud.google.com/go v0.46.3 // indirect
