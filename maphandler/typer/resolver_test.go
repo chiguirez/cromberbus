@@ -1,9 +1,11 @@
-package typer
+package typer_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	. "github.com/chiguirez/cromberbus/v3/maphandler/typer"
 )
 
 type ACommand struct{}
