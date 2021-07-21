@@ -10,21 +10,16 @@ import (
 
 type Command interface{}
 
-type CommandBus interface {
-	Use(middleware middleware.Handler)
-	Dispatch(ctx context.Context, command Command) error
-}
-
-type cb struct {
+type CommandBus struct {
 	middlewareList middleware.List
 	resolver       maphandler.Resolver
 }
 
-func (c *cb) Use(middleware middleware.Handler) {
+func (c *CommandBus) Use(middleware middleware.Handler) {
 	c.middlewareList.Add(middleware)
 }
 
-func (c cb) Dispatch(ctx context.Context, command Command) error {
+func (c CommandBus) Dispatch(ctx context.Context, command Command) error {
 	cHandler, err := c.resolver.Resolve(command)
 	if err != nil {
 		return err
@@ -40,7 +35,7 @@ func New(handlers ...commandhandler.Class) CommandBus {
 		resolver.AddHandler(h)
 	}
 
-	return &cb{
+	return CommandBus{
 		middlewareList: make([]middleware.Handler, 0),
 		resolver:       resolver,
 	}

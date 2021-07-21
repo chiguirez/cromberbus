@@ -6,16 +6,18 @@ import (
 )
 
 func FuncHaveExactlyTwoAttrib(handler interface{}) bool {
-	return reflect.TypeOf(handler).NumIn() == 2
+	const numberOfAttributesExpected = 2
+
+	return reflect.TypeOf(handler).NumIn() == numberOfAttributesExpected
 }
 
-func FuncAttributeMustBeContext(handler interface{}) bool {
+func FuncFirstAttributeMustBeContext(handler interface{}) bool {
 	ctxInterface := reflect.TypeOf((*context.Context)(nil)).Elem()
 
 	return reflect.TypeOf(handler).In(0).Implements(ctxInterface)
 }
 
-func FuncAttributeMustBeStruct(handler interface{}) bool {
+func FuncSecondAttributeMustBeStruct(handler interface{}) bool {
 	return reflect.TypeOf(handler).In(1).Kind() == reflect.Struct
 }
 
@@ -46,11 +48,11 @@ func CommandHandler(handler interface{}) {
 		panic("handler should return error")
 	}
 
-	if !FuncAttributeMustBeContext(handler) {
+	if !FuncFirstAttributeMustBeContext(handler) {
 		panic("handler first argument should have a context")
 	}
 
-	if !FuncAttributeMustBeStruct(handler) {
+	if !FuncSecondAttributeMustBeStruct(handler) {
 		panic("handler second argument must be a command struct")
 	}
 }
