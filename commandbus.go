@@ -25,9 +25,6 @@ func (c *cb) Use(middleware middleware.Handler) {
 }
 
 func (c cb) Dispatch(ctx context.Context, command Command) error {
-	errChan := make(chan error, 1)
-	defer close(errChan)
-
 	cHandler, err := c.resolver.Resolve(command)
 	if err != nil {
 		return err
